@@ -1,0 +1,26 @@
+# Brainstorming session files (internal Claude tool state)
+.superpowers/
+.design-canvas.state.json
+
+# Node
+node_modules/
+dist/
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Test artifacts
+.pytest_cache/
+test.db
+htmlcov/
+.coverage
+
+# OS
+.DS_Store
+Thumbs.db
