@@ -1,5 +1,4 @@
 import enum
-from datetime import datetime, timezone
 from sqlalchemy import (
     Column, Integer, String, Text, Boolean,
     Enum, ForeignKey, DateTime, UniqueConstraint,
@@ -54,8 +53,8 @@ class Campo(Base):
     grupo = Column(String, nullable=False)
     orden = Column(Integer, nullable=False)
     etiqueta = Column(String, nullable=False)
-    valor_usuario = Column(Text, default="")
-    valor_analista = Column(Text, default="")
+    valor_usuario = Column(Text, nullable=False, server_default="")
+    valor_analista = Column(Text, nullable=False, server_default="")
     es_mono = Column(Boolean, default=False)
     estado = Column(
         Enum(EstadoCampo, name="estadocampo"),
