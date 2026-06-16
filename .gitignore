@@ -20,6 +20,8 @@ venv/
 test.db
 htmlcov/
 .coverage
+coverage.xml
+frontend/coverage/
 
 # OS
 .DS_Store
