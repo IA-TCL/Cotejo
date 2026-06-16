@@ -69,3 +69,44 @@ def create_expediente(
     db.commit()
     db.refresh(exp)
     return exp
+
+
+@router.get("/{exp_id}", response_model=schemas.ExpedienteDetailOut)
+def get_expediente(exp_id: int, db: Session = Depends(get_db)):
+    exp = db.query(models.Expediente).filter_by(id=exp_id).first()
+    if not exp:
+        raise HTTPException(status_code=404, detail="Expediente no encontrado")
+    return exp
+
+
+@router.patch("/{exp_id}/campos/{campo_id}", response_model=schemas.CampoOut)
+def patch_campo(
+    exp_id: int,
+    campo_id: int,
+    body: schemas.CampoPatch,
+    db: Session = Depends(get_db),
+):
+    exp = db.query(models.Expediente).filter_by(id=exp_id).first()
+    if not exp:
+        raise HTTPException(status_code=404, detail="Expediente no encontrado")
+    if exp.estado != models.EstadoExpediente.en_revision:
+        raise HTTPException(status_code=409, detail="El expediente está cerrado")
+
+    campo = db.query(models.Campo).filter_by(id=campo_id, expediente_id=exp_id).first()
+    if not campo:
+        raise HTTPException(status_code=404, detail="Campo no encontrado")
+
+    if body.valor_usuario is not None:
+        campo.valor_usuario = body.valor_usuario
+    if body.valor_analista is not None:
+        campo.valor_analista = body.valor_analista
+
+    nuevo_estado = calc_estado(campo.valor_usuario, campo.valor_analista)
+    if nuevo_estado == models.EstadoCampo.match and campo.estado == models.EstadoCampo.diff:
+        res = db.query(models.Resolucion).filter_by(campo_id=campo_id).first()
+        if res:
+            db.delete(res)
+    campo.estado = nuevo_estado
+    db.commit()
+    db.refresh(campo)
+    return campo
