@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { T } from '../tokens'
 import { api } from '../api'
 import NuevoExpedienteModal from '../components/NuevoExpedienteModal'
+import StatsBar from '../components/StatsBar'
+import FilterBar from '../components/FilterBar'
+import { filtrarExpedientes } from '../utils/filtrarExpedientes'
 
 const ESTADO_PILL = {
   en_revision: { label: 'En revisión', color: T.diff, bg: T.diffBg },
@@ -26,8 +29,9 @@ export default function Lista() {
   const [expedientes, setExpedientes] = useState([])
   const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState(false)
+  const [filtros, setFiltros] = useState({ busqueda: '', estado: null, soloMios: false })
   const navigate = useNavigate()
-  const analista = localStorage.getItem('analista_nombre')
+  const analista = localStorage.getItem('analista_nombre') || ''
 
   useEffect(() => {
     api.expedientes.list().then(setExpedientes).finally(() => setLoading(false))
@@ -38,9 +42,12 @@ export default function Lista() {
     navigate(`/expedientes/${exp.id}`)
   }
 
+  const expedientesFiltrados = filtrarExpedientes(expedientes, { ...filtros, analista })
+
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 24px', fontFamily: T.sans }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 28 }}>
+    <div style={{ maxWidth: 960, margin: '0 auto', padding: '40px 24px', fontFamily: T.sans }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>
           <h1 style={{ fontFamily: T.serif, fontSize: 26, fontWeight: 600, color: T.ink }}>
             Portal de Cotejo
@@ -61,6 +68,22 @@ export default function Lista() {
         </button>
       </div>
 
+      {!loading && expedientes.length > 0 && (
+        <>
+          <StatsBar
+            expedientes={expedientes}
+            estadoActivo={filtros.estado}
+            onEstadoClick={(estado) => setFiltros((f) => ({ ...f, estado }))}
+          />
+          <FilterBar
+            filtros={filtros}
+            onChange={setFiltros}
+            totalVisible={expedientesFiltrados.length}
+            totalGeneral={expedientes.length}
+          />
+        </>
+      )}
+
       {loading ? (
         <div style={{ color: T.faint, fontSize: 14 }}>Cargando…</div>
       ) : expedientes.length === 0 ? (
@@ -69,6 +92,19 @@ export default function Lista() {
           border: `2px dashed ${T.line}`, borderRadius: 12,
         }}>
           No hay expedientes aún. Crea el primero.
+        </div>
+      ) : expedientesFiltrados.length === 0 ? (
+        <div style={{
+          textAlign: 'center', padding: '60px 0', color: T.faint, fontSize: 14,
+          border: `2px dashed ${T.line}`, borderRadius: 12,
+        }}>
+          No hay expedientes con esos filtros.{' '}
+          <button
+            onClick={() => setFiltros({ busqueda: '', estado: null, soloMios: false })}
+            style={{ background: 'none', border: 'none', color: T.navy, cursor: 'pointer', fontSize: 14, textDecoration: 'underline', fontFamily: T.sans }}
+          >
+            Limpiar filtros
+          </button>
         </div>
       ) : (
         <div style={{ border: `1px solid ${T.line}`, borderRadius: 12, overflow: 'hidden', background: T.panel }}>
@@ -79,7 +115,7 @@ export default function Lista() {
           }}>
             <span>Número</span><span>Solicitante</span><span>Analista</span><span>Estado</span><span>Fecha</span>
           </div>
-          {expedientes.map((exp) => (
+          {expedientesFiltrados.map((exp) => (
             <div
               key={exp.id}
               onClick={() => navigate(`/expedientes/${exp.id}`)}
