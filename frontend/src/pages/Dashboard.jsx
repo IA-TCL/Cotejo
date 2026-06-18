@@ -170,10 +170,10 @@ export default function Dashboard() {
   const nowStr = new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long',year:'numeric'})
 
   const statCards = [
-    { label:'Total',       value:total, color:T.navy,    bg:T.navySoft, icon:<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke={T.navy} strokeWidth="1.6" strokeLinecap="round"><rect x="3" y="2" width="12" height="14" rx="2"/><path d="M6 6h6M6 9h6M6 12h4"/></svg> },
-    { label:'En revisión', value:rev,   color:'#d97706', bg:'#fffbeb',  icon:<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#d97706" strokeWidth="1.6" strokeLinecap="round"><circle cx="9" cy="9" r="7"/><path d="M9 5.5V9l2.5 2"/></svg> },
-    { label:'Aprobados',   value:apr,   color:'#16a34a', bg:'#f0fdf4',  icon:<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#16a34a" strokeWidth="1.6" strokeLinecap="round"><circle cx="9" cy="9" r="7"/><path d="M5.5 9l2.5 2.5 5-5"/></svg> },
-    { label:'Rechazados',  value:rec,   color:'#dc2626', bg:'#fff1f2',  icon:<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#dc2626" strokeWidth="1.6" strokeLinecap="round"><circle cx="9" cy="9" r="7"/><path d="M6.5 6.5l5 5M11.5 6.5l-5 5"/></svg> },
+    { label:'Total',       value:total, color:T.navy,    bg:T.navySoft, estado:null,          icon:<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke={T.navy} strokeWidth="1.6" strokeLinecap="round"><rect x="3" y="2" width="12" height="14" rx="2"/><path d="M6 6h6M6 9h6M6 12h4"/></svg> },
+    { label:'En revisión', value:rev,   color:'#d97706', bg:'#fffbeb',  estado:'en_revision', icon:<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#d97706" strokeWidth="1.6" strokeLinecap="round"><circle cx="9" cy="9" r="7"/><path d="M9 5.5V9l2.5 2"/></svg> },
+    { label:'Aprobados',   value:apr,   color:'#16a34a', bg:'#f0fdf4',  estado:'aprobado',    icon:<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#16a34a" strokeWidth="1.6" strokeLinecap="round"><circle cx="9" cy="9" r="7"/><path d="M5.5 9l2.5 2.5 5-5"/></svg> },
+    { label:'Rechazados',  value:rec,   color:'#dc2626', bg:'#fff1f2',  estado:'rechazado',   icon:<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="#dc2626" strokeWidth="1.6" strokeLinecap="round"><circle cx="9" cy="9" r="7"/><path d="M6.5 6.5l5 5M11.5 6.5l-5 5"/></svg> },
   ]
 
   return (
@@ -200,10 +200,26 @@ export default function Dashboard() {
         {/* Stat cards */}
         <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:14, marginBottom:28 }}>
           {statCards.map(s => (
-            <div key={s.label} style={{
-              background:'#fff', borderRadius:14, padding:'20px 22px',
-              border:`1.5px solid ${s.color}22`, boxShadow:'0 1px 4px rgba(0,0,0,.06)',
-            }}>
+            <button
+              key={s.label}
+              onClick={() => navigate('/expedientes', { state: { filtroEstado: s.estado } })}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = 'translateY(-3px)'
+                e.currentTarget.style.boxShadow = `0 10px 24px ${s.color}28`
+                e.currentTarget.style.borderColor = s.color
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = 'none'
+                e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,.06)'
+                e.currentTarget.style.borderColor = `${s.color}22`
+              }}
+              style={{
+                background:'#fff', borderRadius:14, padding:'20px 22px',
+                border:`1.5px solid ${s.color}22`, boxShadow:'0 1px 4px rgba(0,0,0,.06)',
+                cursor:'pointer', textAlign:'left', fontFamily:T.sans,
+                transition:'all .18s cubic-bezier(.2,.8,.2,1)',
+              }}
+            >
               <div style={{ width:38,height:38, borderRadius:10, background:s.bg, display:'flex', alignItems:'center', justifyContent:'center', marginBottom:14 }}>
                 {s.icon}
               </div>
@@ -211,7 +227,7 @@ export default function Dashboard() {
                 {loading ? '–' : s.value}
               </div>
               <div style={{ fontSize:12, color:T.sub, fontWeight:500 }}>{s.label}</div>
-            </div>
+            </button>
           ))}
         </div>
 

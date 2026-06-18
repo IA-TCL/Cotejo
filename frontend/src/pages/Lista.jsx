@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { T } from '../tokens'
 import { api } from '../api'
 import NuevoExpedienteModal from '../components/NuevoExpedienteModal'
@@ -90,7 +90,8 @@ export default function Lista() {
   const [expedientes, setExpedientes] = useState([])
   const [loading, setLoading] = useState(true)
   const [modal, setModal] = useState(false)
-  const [filtros, setFiltros] = useState({ busqueda: '', estado: null, soloMios: false })
+  const { state: navState } = useLocation()
+  const [filtros, setFiltros] = useState({ busqueda: '', estado: navState?.filtroEstado ?? null, soloMios: false })
   const [copied, setCopied] = useState(null)
   const [view, setView] = useState('table')
   const navigate = useNavigate()
