@@ -6,7 +6,20 @@ import NuevoExpedienteModal from '../components/NuevoExpedienteModal'
 import StatsBar from '../components/StatsBar'
 import FilterBar from '../components/FilterBar'
 import SkeletonLista from '../components/SkeletonLista'
+import KanbanView from '../components/KanbanView'
 import { filtrarExpedientes } from '../utils/filtrarExpedientes'
+import { useToast } from '../components/ToastProvider'
+
+function exportCSV(data) {
+  const header = ['Número','Solicitante','Analista','Estado','Fecha']
+  const rows = data.map(e => [e.numero, e.solicitante, e.analista_nombre||'', e.estado, e.creado_en?.slice(0,10)||''])
+  const csv = [header,...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n')
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'})),
+    download: `expedientes-${new Date().toISOString().slice(0,10)}.csv`,
+  })
+  a.click(); URL.revokeObjectURL(a.href)
+}
 
 const ESTADO_PILL = {
   en_revision: { label: 'En revisión', color: T.diff, bg: T.diffBg },
@@ -79,8 +92,10 @@ export default function Lista() {
   const [modal, setModal] = useState(false)
   const [filtros, setFiltros] = useState({ busqueda: '', estado: null, soloMios: false })
   const [copied, setCopied] = useState(null)
+  const [view, setView] = useState('table')
   const navigate = useNavigate()
   const analista = localStorage.getItem('analista_nombre') || ''
+  const toast = useToast()
 
   useEffect(() => {
     api.expedientes.list().then(setExpedientes).finally(() => setLoading(false))
@@ -88,6 +103,7 @@ export default function Lista() {
 
   function handleCreado(exp) {
     setModal(false)
+    toast(`Expediente ${exp.numero} creado`, 'success')
     navigate(`/expedientes/${exp.id}`)
   }
 
@@ -96,6 +112,13 @@ export default function Lista() {
     navigator.clipboard.writeText(numero)
     setCopied(id)
     setTimeout(() => setCopied(null), 1500)
+    toast(`${numero} copiado al portapapeles`, 'info')
+  }
+
+  function handleExport() {
+    const data = filtrarExpedientes(expedientes, { ...filtros, analista })
+    exportCSV(data)
+    toast(`${data.length} expediente${data.length !== 1 ? 's' : ''} exportados`, 'success')
   }
 
   const expedientesFiltrados = filtrarExpedientes(expedientes, { ...filtros, analista })
@@ -119,21 +142,53 @@ export default function Lista() {
               {loading ? 'Cargando…' : `${expedientes.length} expediente${expedientes.length !== 1 ? 's' : ''} en total`}
             </div>
           </div>
-          <button
-            onClick={() => setModal(true)}
-            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,.22)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,.12)'; e.currentTarget.style.transform = 'none' }}
-            style={{
-              padding: '10px 20px', borderRadius: 9,
-              border: '1px solid rgba(255,255,255,.25)',
-              background: 'rgba(255,255,255,.12)', backdropFilter: 'blur(6px)',
-              color: '#fff', fontSize: 14, fontWeight: 600,
-              cursor: 'pointer', fontFamily: T.sans,
-              transition: 'all .15s cubic-bezier(.2,.8,.2,1)',
-            }}
-          >
-            + Nuevo expediente
-          </button>
+          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            {/* View toggle */}
+            <div style={{ display:'flex', background:'rgba(255,255,255,.1)', borderRadius:8, padding:3, border:'1px solid rgba(255,255,255,.18)' }}>
+              {[['table','≡'],['kanban','⊞']].map(([v,icon]) => (
+                <button key={v} onClick={() => setView(v)} style={{
+                  background: view===v ? 'rgba(255,255,255,.2)' : 'none', border:'none',
+                  borderRadius:6, padding:'5px 10px', color:'#fff', cursor:'pointer',
+                  fontSize:14, fontWeight:view===v?700:400, transition:'all .14s',
+                  opacity: view===v ? 1 : 0.6,
+                }}>{icon}</button>
+              ))}
+            </div>
+
+            {/* Export CSV */}
+            {!loading && expedientes.length > 0 && (
+              <button
+                onClick={handleExport}
+                style={{
+                  padding:'9px 14px', borderRadius:8, border:'1px solid rgba(255,255,255,.2)',
+                  background:'rgba(255,255,255,.08)', color:'rgba(255,255,255,.8)',
+                  fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:T.sans,
+                  display:'flex', alignItems:'center', gap:6, transition:'all .14s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,.15)'}
+                onMouseLeave={e => e.currentTarget.style.background='rgba(255,255,255,.08)'}
+              >
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M6.5 1v8M3 6l3.5 3.5L10 6"/><path d="M1 11h11"/></svg>
+                CSV
+              </button>
+            )}
+
+            <button
+              onClick={() => setModal(true)}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,.22)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,.12)'; e.currentTarget.style.transform = 'none' }}
+              style={{
+                padding: '10px 20px', borderRadius: 9,
+                border: '1px solid rgba(255,255,255,.25)',
+                background: 'rgba(255,255,255,.12)', backdropFilter: 'blur(6px)',
+                color: '#fff', fontSize: 14, fontWeight: 600,
+                cursor: 'pointer', fontFamily: T.sans,
+                transition: 'all .15s cubic-bezier(.2,.8,.2,1)',
+              }}
+            >
+              + Nuevo expediente
+            </button>
+          </div>
         </div>
       </div>
 
@@ -157,6 +212,8 @@ export default function Lista() {
 
       {loading ? (
         <SkeletonLista />
+      ) : view === 'kanban' && expedientes.length > 0 ? (
+        <KanbanView expedientes={expedientesFiltrados} onNavigate={(id) => navigate(`/expedientes/${id}`)} />
       ) : expedientes.length === 0 ? (
         <div style={{
           textAlign: 'center', padding: '60px 0', color: T.faint, fontSize: 14,

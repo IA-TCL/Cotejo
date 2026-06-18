@@ -5,6 +5,69 @@ import { api } from '../api'
 import RailIzq from '../components/RailIzq'
 import DiffCard from '../components/DiffCard'
 import PanelDecision from '../components/PanelDecision'
+import { useToast } from '../components/ToastProvider'
+
+function formatDate(iso) {
+  if (!iso) return ''
+  return new Date(iso).toLocaleDateString('es-MX', { day:'2-digit', month:'long', year:'numeric' })
+}
+
+function Timeline({ exp, diffCampos, resueltos }) {
+  const [open, setOpen] = useState(false)
+  const events = []
+  events.push({ type:'created', label:'Expediente creado', date:exp.creado_en, sub:`por ${exp.analista_nombre}` })
+  if (resueltos > 0) {
+    events.push({ type:'progress', label:`${resueltos} diferencia${resueltos!==1?'s':''} resueltas`, date:null, sub:`de ${diffCampos} totales` })
+  }
+  if (exp.estado !== 'en_revision') {
+    events.push({
+      type: exp.estado,
+      label: exp.estado === 'aprobado' ? 'Expediente aprobado' : 'Expediente rechazado',
+      date: null,
+      sub: exp.nota_decision || null,
+    })
+  }
+  const DOT_COLOR = { created:T.navy, progress:'#d97706', aprobado:'#16a34a', rechazado:'#dc2626' }
+  return (
+    <div style={{ borderBottom:`1px solid ${T.lineSoft}`, marginBottom:0 }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        style={{
+          display:'flex', alignItems:'center', gap:8, width:'100%', padding:'10px 28px',
+          background:'none', border:'none', cursor:'pointer', fontFamily:T.sans,
+          color:T.sub, fontSize:12.5, textAlign:'left',
+          borderBottom: open ? `1px solid ${T.lineSoft}` : 'none',
+        }}
+      >
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          <circle cx="6.5" cy="6.5" r="5.5"/><path d="M6.5 4v3l1.5 1.5"/>
+        </svg>
+        <span style={{ fontWeight:600 }}>Historial del expediente</span>
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+          style={{ marginLeft:'auto', transform: open ? 'rotate(180deg)' : 'none', transition:'transform .18s' }}>
+          <path d="M2 3.5l3.5 4 3.5-4"/>
+        </svg>
+      </button>
+      {open && (
+        <div style={{ padding:'16px 28px 20px', display:'flex', flexDirection:'column', gap:0 }}>
+          {events.map((ev, i) => (
+            <div key={i} style={{ display:'flex', gap:14 }}>
+              <div style={{ display:'flex', flexDirection:'column', alignItems:'center', flexShrink:0 }}>
+                <div style={{ width:10, height:10, borderRadius:'50%', background:DOT_COLOR[ev.type]||T.navy, marginTop:3 }} />
+                {i < events.length-1 && <div style={{ width:2, flex:1, background:T.lineSoft, minHeight:18, marginTop:3, marginBottom:3 }} />}
+              </div>
+              <div style={{ paddingBottom:16 }}>
+                <div style={{ fontSize:13, fontWeight:600, color:T.ink }}>{ev.label}</div>
+                {ev.date && <div style={{ fontSize:11.5, color:T.faint, marginTop:1 }}>{formatDate(ev.date)}</div>}
+                {ev.sub && <div style={{ fontSize:12, color:T.sub, marginTop:2, fontStyle: ev.type==='aprobado'||ev.type==='rechazado' ? 'italic' : 'normal' }}>{ev.sub}</div>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function Cotejo() {
   const { id } = useParams()
@@ -16,6 +79,7 @@ export default function Cotejo() {
   const [error, setError] = useState(null)
   const [activeGrupo, setActiveGrupo] = useState(null)
   const mainRef = useRef(null)
+  const toast = useToast()
 
   useEffect(() => {
     api.expedientes.get(id).then(setExp).catch(() => navigate('/expedientes')).finally(() => setLoading(false))
@@ -102,8 +166,10 @@ export default function Cotejo() {
     try {
       const updated = await api.decision.post(id, { resultado, nota_decision: nota || null })
       setExp(updated)
+      toast(resultado === 'aprobado' ? 'Expediente aprobado correctamente' : 'Expediente rechazado', resultado === 'aprobado' ? 'success' : 'error')
     } catch (e) {
       setError(e.message)
+      toast(e.message, 'error')
     } finally {
       setSaving(false)
     }
@@ -123,6 +189,7 @@ export default function Cotejo() {
       />
 
       <main ref={mainRef} style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', background: T.paper }}>
+        <Timeline exp={exp} diffCampos={diffCampos.length} resueltos={resueltos} />
         <div style={{ padding: '18px 28px 12px', borderBottom: `1px solid ${T.lineSoft}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <button onClick={() => navigate('/expedientes')} style={{
