@@ -1,6 +1,6 @@
 import { T } from '../tokens'
 
-export default function RailIzq({ exp, grupos, resueltos, totalDiff }) {
+export default function RailIzq({ exp, grupos, resueltos, totalDiff, choices = {}, activeGrupo, onGrupoClick }) {
   const pct = totalDiff > 0 ? Math.round((resueltos / totalDiff) * 100) : 100
   const allResolved = resueltos === totalDiff
 
@@ -47,33 +47,47 @@ export default function RailIzq({ exp, grupos, resueltos, totalDiff }) {
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.8, textTransform: 'uppercase', color: 'rgba(255,255,255,.35)', marginBottom: 10 }}>
           Secciones
         </div>
-        {grupos.map((g, i) => {
+        {grupos.map((g) => {
           const d = g.fields.filter((f) => f.st === 'diff').length
-          const active = i === 0
+          const resolved = g.fields.filter((f) => f.st === 'diff' && choices[f.id]).length
+          const sectionDone = d === 0 || resolved === d
+          const active = g.name === activeGrupo
+
           return (
-            <div key={g.name} style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '9px 11px', borderRadius: 7, marginBottom: 2,
-              background: active ? 'rgba(255,255,255,.12)' : 'transparent',
-              border: active ? '1px solid rgba(255,255,255,.1)' : '1px solid transparent',
-              transition: 'background .15s',
-            }}>
-              <span style={{ fontSize: 13, fontWeight: active ? 600 : 500, color: active ? '#fff' : 'rgba(255,255,255,.55)' }}>
+            <button
+              key={g.name}
+              onClick={() => onGrupoClick?.(g.name)}
+              onMouseEnter={(e) => {
+                if (!active) e.currentTarget.style.background = 'rgba(255,255,255,.08)'
+              }}
+              onMouseLeave={(e) => {
+                if (!active) e.currentTarget.style.background = 'transparent'
+              }}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '9px 11px', borderRadius: 7, marginBottom: 2,
+                background: active ? 'rgba(255,255,255,.14)' : 'transparent',
+                border: active ? '1px solid rgba(255,255,255,.12)' : '1px solid transparent',
+                cursor: 'pointer', width: '100%', textAlign: 'left',
+                transition: 'background .14s, border-color .14s',
+              }}
+            >
+              <span style={{ fontSize: 13, fontWeight: active ? 600 : 500, color: active ? '#fff' : 'rgba(255,255,255,.55)', fontFamily: T.sans }}>
                 {g.name}
               </span>
-              {d > 0 ? (
+              {d > 0 && !sectionDone ? (
                 <span style={{
                   fontFamily: T.mono, fontSize: 11, fontWeight: 600, color: '#1b2330',
                   background: '#f4d79f', borderRadius: 10, padding: '1px 7px',
                 }}>
-                  {d}
+                  {d - resolved}
                 </span>
               ) : (
                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="#5de8a4" strokeWidth="2" strokeLinecap="round">
                   <path d="M2.5 6.5l2.5 2.5 5.5-6" />
                 </svg>
               )}
-            </div>
+            </button>
           )
         })}
       </div>
