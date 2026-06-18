@@ -101,31 +101,43 @@ export default function Lista() {
   const expedientesFiltrados = filtrarExpedientes(expedientes, { ...filtros, analista })
 
   return (
-    <div style={{ maxWidth: 960, margin: '0 auto', padding: '36px 24px', fontFamily: T.sans }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <div>
-          <h1 style={{ fontFamily: T.serif, fontSize: 24, fontWeight: 600, color: T.ink, margin: 0 }}>
-            Expedientes
-          </h1>
-          {!loading && (
-            <div style={{ fontSize: 13, color: T.faint, marginTop: 3 }}>
-              {expedientes.length} expediente{expedientes.length !== 1 ? 's' : ''} en total
+    <div style={{ fontFamily: T.sans }}>
+      {/* Hero header */}
+      <div style={{
+        background: 'linear-gradient(135deg, #1b2330 0%, #1f3a5f 55%, #2d6a8f 100%)',
+        padding: '28px 0 32px', position: 'relative', overflow: 'hidden',
+      }}>
+        {/* decorative circles */}
+        <div style={{ position: 'absolute', right: -80, top: -80, width: 300, height: 300, borderRadius: '50%', background: 'rgba(255,255,255,.04)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', right: 100, bottom: -60, width: 180, height: 180, borderRadius: '50%', background: 'rgba(255,255,255,.03)', pointerEvents: 'none' }} />
+        <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <h1 style={{ fontFamily: T.serif, fontSize: 26, fontWeight: 600, color: '#fff', margin: 0, letterSpacing: -0.3 }}>
+              Expedientes
+            </h1>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,.55)', marginTop: 4 }}>
+              {loading ? 'Cargando…' : `${expedientes.length} expediente${expedientes.length !== 1 ? 's' : ''} en total`}
             </div>
-          )}
+          </div>
+          <button
+            onClick={() => setModal(true)}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,.22)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,.12)'; e.currentTarget.style.transform = 'none' }}
+            style={{
+              padding: '10px 20px', borderRadius: 9,
+              border: '1px solid rgba(255,255,255,.25)',
+              background: 'rgba(255,255,255,.12)', backdropFilter: 'blur(6px)',
+              color: '#fff', fontSize: 14, fontWeight: 600,
+              cursor: 'pointer', fontFamily: T.sans,
+              transition: 'all .15s cubic-bezier(.2,.8,.2,1)',
+            }}
+          >
+            + Nuevo expediente
+          </button>
         </div>
-        <button
-          onClick={() => setModal(true)}
-          onMouseEnter={(e) => (e.currentTarget.style.background = T.navyInk)}
-          onMouseLeave={(e) => (e.currentTarget.style.background = T.navy)}
-          style={{
-            padding: '10px 20px', borderRadius: 8, border: 'none',
-            background: T.navy, color: '#fff', fontSize: 14, fontWeight: 600,
-            cursor: 'pointer', fontFamily: T.sans, transition: 'background .13s',
-          }}
-        >
-          + Nuevo expediente
-        </button>
       </div>
+
+    <div style={{ maxWidth: 960, margin: '0 auto', padding: '28px 24px' }}>
 
       {!loading && expedientes.length > 0 && (
         <>
@@ -226,6 +238,7 @@ export default function Lista() {
       )}
 
       {modal && <NuevoExpedienteModal onClose={() => setModal(false)} onCreado={handleCreado} />}
+    </div>
     </div>
   )
 }

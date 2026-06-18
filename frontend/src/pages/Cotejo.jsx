@@ -79,7 +79,7 @@ export default function Cotejo() {
   if (!exp) return null
 
   return (
-    <div style={{ width: '100%', height: 'calc(100vh - 48px)', background: T.paper, fontFamily: T.sans, color: T.ink, display: 'flex' }}>
+    <div style={{ width: '100%', height: 'calc(100vh - 52px)', background: T.paper, fontFamily: T.sans, color: T.ink, display: 'flex' }}>
       <RailIzq exp={exp} grupos={grupos} resueltos={resueltos} totalDiff={diffCampos.length} />
 
       <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', background: T.paper }}>
