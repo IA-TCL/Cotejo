@@ -34,11 +34,13 @@ export default function FilterBar({ filtros, onChange, totalVisible, totalGenera
           <input
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
+            onFocus={(e) => (e.target.style.borderColor = T.navy)}
+            onBlur={(e) => (e.target.style.borderColor = T.line)}
             placeholder="Buscar por nombre o número…"
             style={{
               width: '100%', padding: '9px 14px 9px 36px', borderRadius: 8, fontSize: 13.5,
               border: `1px solid ${T.line}`, fontFamily: T.sans, color: T.ink,
-              outline: 'none', background: T.panel,
+              outline: 'none', background: T.panel, transition: 'border-color .15s',
             }}
           />
         </div>

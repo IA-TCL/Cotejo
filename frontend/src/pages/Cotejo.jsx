@@ -79,10 +79,10 @@ export default function Cotejo() {
   if (!exp) return null
 
   return (
-    <div style={{ width: '100%', height: '100vh', background: T.paper, fontFamily: T.sans, color: T.ink, display: 'flex' }}>
+    <div style={{ width: '100%', height: 'calc(100vh - 48px)', background: T.paper, fontFamily: T.sans, color: T.ink, display: 'flex' }}>
       <RailIzq exp={exp} grupos={grupos} resueltos={resueltos} totalDiff={diffCampos.length} />
 
-      <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+      <main style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', background: T.paper }}>
         <div style={{ padding: '18px 28px 12px', borderBottom: `1px solid ${T.lineSoft}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <button onClick={() => navigate('/expedientes')} style={{
@@ -143,7 +143,7 @@ export default function Cotejo() {
               </div>
               <div style={{
                 display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 28px',
-                border: `1px solid ${T.lineSoft}`, borderRadius: 10, padding: '10px 16px', background: '#fff',
+                border: `1px solid #cfe6da`, borderRadius: 10, padding: '10px 16px', background: T.matchBg,
               }}>
                 {matchCampos.map((c) => (
                   <div key={c.id} style={{

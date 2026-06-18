@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import AnalistaModal from './components/AnalistaModal'
+import Navbar from './components/Navbar'
 import Lista from './pages/Lista'
 import Cotejo from './pages/Cotejo'
 
@@ -20,11 +21,14 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/expedientes" replace />} />
-        <Route path="/expedientes" element={<Lista />} />
-        <Route path="/expedientes/:id" element={<Cotejo />} />
-      </Routes>
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <Navbar analista={analista} />
+        <Routes>
+          <Route path="/" element={<Navigate to="/expedientes" replace />} />
+          <Route path="/expedientes" element={<Lista />} />
+          <Route path="/expedientes/:id" element={<Cotejo />} />
+        </Routes>
+      </div>
     </BrowserRouter>
   )
 }

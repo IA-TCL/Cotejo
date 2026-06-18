@@ -45,10 +45,12 @@ export default function NuevoExpedienteModal({ onClose, onCreado }) {
           placeholder="Ej: María Fernanda Robles Díaz"
           value={solicitante}
           onChange={(e) => setSolicitante(e.target.value)}
+          onFocus={(e) => (e.target.style.borderColor = T.navy)}
+          onBlur={(e) => (e.target.style.borderColor = T.line)}
           style={{
             width: '100%', padding: '10px 14px', borderRadius: 8, fontSize: 14,
             border: `1px solid ${T.line}`, fontFamily: T.sans, color: T.ink,
-            marginBottom: 12, outline: 'none',
+            marginBottom: 12, outline: 'none', transition: 'border-color .15s',
           }}
         />
 
